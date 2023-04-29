@@ -1,0 +1,208 @@
+---
+title: "lab4"
+author: "Nathanael Reese"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: darkly
+    highlight: zenburn
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Task 1
+
+```{r}
+getwd()
+```
+
+# Task 2
+
+```{r}
+spruce=read.csv("SPRUCE.csv")
+tail(spruce)
+
+```
+
+# Task 3
+
+```{r}
+library(s20x)
+trendscatter(Height~BHDiameter,f=0.5, data=spruce)
+spruce.lm=with(spruce, lm(Height~BHDiameter))
+height.res=residuals(spruce.lm)
+height.fit=fitted(spruce.lm)
+plot(height.res~height.fit)
+trendscatter(height.res~height.fit) # Quadratic Function
+plot(spruce.lm)
+normcheck(spruce.lm, shapiro.wilk = TRUE)
+# P-Value = 0.29
+# The null hypothesis in this case is 0.5 when we set it in the trendscatter code snippet
+# The data is not viable because of the presence of a quadratic formula when plotting the residuals.
+```
+
+# Task 4
+
+```{r}
+quad.lm = with(spruce, lm(Height~BHDiameter+I(BHDiameter^2)))
+plot(quad.lm)
+quad.res=residuals(quad.lm)
+quad.fit=fitted(quad.lm)
+plot(quad.lm)
+normcheck(quad.lm, shapiro.wilk = T)
+# P - Value = 0.684
+# 0.684 > 0.5 so we are good!!!
+```
+
+# Task 5
+
+```{r}
+summary(quad.lm)
+coef(quad.lm)
+data = 15:24
+predict20x(quad.lm,data.frame(BHDiameter = data, `I(BhDiameter)^2`=data^2))
+predict(spruce.lm, data.frame(BHDiameter=c(15,18,20)))
+anova(quad.lm, spruce.lm)
+height.qfit=fitted(quad.lm)
+
+RSS=with(spruce, sum((Height-height.qfit)^2))
+RSS
+MSS = with(spruce, sum((height.qfit-mean(Height))^2))
+MSS
+
+TSS = with(spruce, sum((Height-mean(Height))^2))
+TSS
+MSS/TSS
+
+```
+
+# Task 6
+
+```{r}
+cooks20x(quad.lm)
+# Cook's distance or Cook's D is a commonly used estimate of the influence of a data point when performing a least-squares regression analysis.
+quad2.lm=lm(Height~BHDiameter + I(BHDiameter^2) , data=spruce[-24,])
+summary(quad2.lm)
+summary(quad.lm)
+layout(matrix(1:2,nc=2,byrow=TRUE))
+cooks20x(quad.lm)
+cooks20x(quad2.lm)
+# The greatest cooks distance is now half of the previous so we are rocking and rolling!
+
+
+```
+
+# Task 7
+
+We start with two lines with a common point $x_k$
+$$
+l_1:y-\beta_0 + \beta_1x
+$$
+$$
+l_2:y-\beta_0+\delta+(\beta_1+\beta_2)x
+$$
+We now need to plug in point $x_k$
+$$
+y_k=\beta_0+\beta_1x_k=\beta_0+\delta+(\beta_1+\beta_2)x_k
+$$
+Now we Distribute $x_k$ on the right side
+$$
+\beta_0+\beta_1x_k-\beta_0+\delta+\beta_1x_k+\beta_2x_k
+$$
+$\beta_0$ and $\beta_1x$ cancel out giving us
+$$
+0=\delta+\beta_2x_k
+$$
+So we get
+$$
+\delta= -\beta_2x_k
+$$
+For $l_2$, similarily
+$$
+l_2:y-\beta_0+\delta+(\beta_1+\beta_2)x
+$$
+$$
+l_2:y+\beta_0+\delta+(\beta_1+\beta_2)x
+$$
+Substitute $\delta=-\beta_2x_k$
+$$
+l_2:y+\beta_0-\beta_2x_k+(\beta_1+\beta_2)x
+$$
+Now we distribute $x$
+$$
+l_2:y+\beta_0-\beta_2x_k+\beta_1x+\beta_2x
+$$
+Rearranging gives us
+$$
+l_2:y+\beta_0+\beta_1x+\beta_2x-\beta_2x_k
+$$
+Factor
+$$
+l_2:y=\beta_0+\beta_1x+\beta_2(x-x_k)
+$$
+This leaves us with an $l_2$ described as an adjustment of $l_1$
+
+Now we can use our indicator function to know where it should and should not include the adjustment
+$$
+y=\beta_0+\beta_1x+\beta_2(x-x_k)I(x>x_k)
+$$
+Fulfilling $I()$ being 1 if $x>x_k$ and 0 otherwise.
+
+
+```{r}
+sp2.df=within(spruce, X<-(BHDiameter-20)*(BHDiameter>20)) # this makes a new variable and places it within the same df
+sp2.df
+
+lmp=lm(Height~BHDiameter + X,data=sp2.df)
+tmp=summary(lmp)
+names(tmp)
+myf = function(x,coef){
+  coef[1]+coef[2]*(x) + coef[3]*(x-18)*(x-18>0)
+}
+plot(spruce,main="Piecewise regression")
+myf(0, coef=tmp$coefficients[,"Estimate"])
+curve(myf(x,coef=tmp$coefficients[,"Estimate"] ),add=TRUE, lwd=2,col="Blue")
+abline(v=18)
+text(18,16,paste("R sq.=",round(tmp$r.squared,4) ))
+```
+
+# Task 8
+
+```{r}
+library(MATH4753REES)
+myfun(10)
+# The function squares the input parameter
+```
+
+# EXTRA!!!
+
+```{r}
+plot(Height~BHDiameter,bg="Blue",pch=21,cex=1.2,
+ylim=c(0,max(Height)),xlim=c(0,max(BHDiameter)), 
+main="Spruce height prediction",data=spruce)
+
+#Make a quadratic model
+quad.lm=lm(Height~BHDiameter + I(BHDiameter^2),data=spruce)
+
+# Find the coefficients
+coef(quad.lm)
+
+#Make a function that produces heights for inputs "x"
+myplot=function(x){
+ 0.86089580 +1.46959217*x  -0.02745726*x^2
+ }
+
+# add the quadratic to the points 
+curve(myplot, lwd=2, col="steelblue",add=TRUE)
+
+#Place segments (residuals) on the plot (except for the 3 largest cooks distances. 18, 21, 24)
+with(spruce[-c(18,21,24),],segments(BHDiameter, Height, BHDiameter, height.qfit[-c(18,21,24)]) )
+with(spruce[c(18,21,24),],segments(BHDiameter, Height, BHDiameter, height.qfit[c(18,21,24)], col="Red", lwd=3) )
+with( spruce, arrows(5,Height[24], BHDiameter[24], Height[24],lwd=2,col="Blue"))
+with(spruce,text(2,Height[24], paste("Highest Cook's","\n", "distance",sep=" ")))
+with(spruce, text(BHDiameter,Height, 1:36,cex=0.5,pos=4))
+```

@@ -1,0 +1,509 @@
+---
+title: "Assignment 1"
+author: "Nathanael Reese"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: spacelab
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Problems Complete 15/15
+
+# Problem 1
+
+**Assignment Weights**
+
+![](gradeweights.png){ width=70% }
+
+**Final Grade**
+
+![](grades.png){ width=70% }
+
+
+
+# Problem 2
+```{r}
+ddt = read.csv("DDT.csv")
+head(ddt)
+m=with(ddt, as.numeric(factor(MILE))) # A
+length(unique(m))
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+### a)
+
+```{r}
+fishcol=with(ddt,ifelse(SPECIES=="CCATFISH","Red",
+                        ifelse(SPECIES=="SMBUFFALO","Blue","Green")))
+
+#River col
+rivcol=with(ddt, ifelse(RIVER=="FCM","Red",
+                        ifelse(RIVER=="LCM","Blue",
+                               ifelse(RIVER=="SCM","Green","Black"))))
+
+coplot(LENGTH~WEIGHT|RIVER*SPECIES,data=ddt,col=fishcol)
+```
+
+### b)
+
+* The lower left three plots are showing specific fish with the species of CCATFISH in the riversFCM, LCM, and SCM with their length(y-axis) and weight(x-axis)
+
+### c)
+
+**Line A**
+Line A creates a numeric vector (vector in numeric order) of all of the mile values in ddt and stores it in variable m
+`m=with(ddt, as.numeric(factor(MILE)))`
+
+### d)
+
+**Line B**
+Line B returns the number of unique values in vector m given in line A
+`length(unique(m))`
+
+### e)
+
+`There are no LMBASS or SMBUFFALO in rivers FCM, LCM, or SCM as shown below.`
+
+```{r}
+ddt[ddt$RIVER=="FCM" & ddt$SPECIES=="LMBASS",]
+ddt[ddt$RIVER=="FCM" & ddt$SPECIES=="SMBUFFALO",]
+ddt[ddt$RIVER=="LCM" & ddt$SPECIES=="LMBASS",]
+ddt[ddt$RIVER=="LCM" & ddt$SPECIES=="SMBUFFALO",]
+ddt[ddt$RIVER=="SCM" & ddt$SPECIES=="LMBASS",]
+ddt[ddt$RIVER=="SCM" & ddt$SPECIES=="SMBUFFALO",]
+```
+
+### f)
+
+```{r}
+catfish=ddt[ddt$RIVER=="FCM" & ddt$SPECIES=="CCATFISH",]
+mean(catfish$DDT)
+
+```
+
+
+# Problem 3
+
+### a)
+
+**Quantitative**
+
+### b)
+
+**Quantitative**
+
+### c)
+
+**Qualitative**
+
+### d)
+
+**Quantitative**
+
+### e)
+
+**Qualitative**
+
+### f)
+
+**Quantitative**
+
+### g)
+
+**Qualitative**
+
+# Problem 4
+
+### a)
+
+**sampling without replacement, stratified random sampling, cluster sampling, and systematic sampling.**
+
+### b)
+
+* Sampling Without Replacement - you select a number that has been previously selected, simply discard the duplicate and select a replacement at the end of the sequence.
+
+* Stratified Random Sampling -  Random samples of experimental units are obtained for each strata, then the units are combined to form the complete sample.
+
+* Cluster Sampling - Rather than collect a simple random sample of all lines of code in the 150 programs (which would be very difficult and costly to do), the engineer will randomly sample 10 of the 150 programs (clusters), then examine all lines of code in each sampled program.
+
+* Systematic Sampling - This method involves systematically selecting every kth experimental unit from a list of all experimental units.
+
+# Problem 5
+
+```{r}
+mtbe=read.csv("MTBE.csv", header=TRUE) # You will need to change the address
+head(mtbe) # First six lines
+dim(mtbe) # rows and columns
+ind=sample(1:223,5,replace=FALSE) # random indices
+mtbe[ind,]
+
+```
+
+### a)
+
+#### i)
+
+```{r}
+mtbeo=na.omit(mtbe)
+```
+
+#### ii)
+
+```{r}
+sd(mtbeo[mtbeo$Aquifier=="Bedrock",]$Depth)
+
+```
+
+# Problem 6
+
+```{r}
+eq=read.csv("EARTHQUAKE.csv")
+ind=sample(1:2929,30,replace=FALSE) # random indices
+eq[ind,]
+
+```
+
+### a)
+
+#### i)
+
+```{r}
+plot(ts(eq$MAG))
+```
+
+#### ii)
+
+```{r}
+median(eq$MAG)
+```
+
+# Problem 7
+
+### a)
+
+**designed experiment**
+
+### b)
+
+**144**
+
+### c)
+
+**River, Species**
+
+# Problem 8
+
+### a)
+
+**Barplot**
+
+### b)
+
+**Legs and Wheels**
+
+### c)
+
+**Legs Only**
+
+### d)
+
+* Legs Only = 63
+* Wheels Only = 20
+* None = 15
+* Both = 8
+
+### e)
+
+```{r}
+freq=c(15,8,63,20)
+RL=c("None","Both","LegsO","WheelsO")
+l=rep(RL,freq)
+
+pareto <- function(x, mn = "Pareto barplot", ...) {  # x is a vector
+  x.tab = table(x)
+  xx.tab = sort(x.tab, decreasing = TRUE, index.return = FALSE)
+  cumsum(as.vector(xx.tab)) -> cs
+  length(x.tab) -> lenx
+  bp <- barplot(xx.tab, ylim = c(0,max(cs)),las = 2)
+  lb <- seq(0,cs[lenx], l = 11)
+  axis(side = 4, at = lb, labels = paste(seq(0, 100, length = 11), "%", sep = ""), las = 1, line = -1, col = "Blue", col.axis = "Red")
+  for(i in 1:(lenx-1)){
+    segments(bp[i], cs[i], bp[i+1], cs[i+1], col = i, lwd = 2)
+  }
+  title(main = mn, ...)
+}
+
+pareto(l)
+```
+
+# Problem 9
+
+### a)
+
+```{r}
+freq=c(32,12,6)
+RL=c("Windows","Office","Explorer")
+x=rep(RL,freq)
+pie(freq,RL)
+```
+
+### b)
+
+```{r}
+pareto(x)
+```
+
+# Problem 10
+
+```{r}
+swd=read.csv("SWDEFECTS.csv", header=TRUE)
+head(swd)
+library(plotrix)
+tab=table(swd$defect)
+rtab=tab/sum(tab)
+round(rtab,2)
+pie3D(rtab,labels=list("OK","Defective"),main="pie plot of SWD")
+
+```
+
+# Problem 11
+
+
+
+### a)
+
+```{r}
+volt=read.csv("VOLTAGE.csv")
+#head(volt)
+old<-subset(volt,subset=LOCATION=="OLD")
+old$VOLTAGE->vto
+vto
+max(vto)
+min(vto)
+lept<-min(vto)-0.05
+rept<-max(vto)+0.05
+rnge<-rept-lept
+inc<-rnge/9
+inc
+seq(lept, rept,by=inc)->cl
+cl
+cvto<-cut(vto,breaks=cl)
+new.tab=table(cvto)
+barplot(new.tab,space=0,main="Frequency Histogram(OLD)",las=2)
+hist(vto,nclass=10)
+```
+
+### b)
+
+```{r}
+st = stem(vto)
+```
+
+### c)
+
+```{r}
+new<-subset(volt,subset=LOCATION=="NEW")
+new$VOLTAGE->vtn
+vtn
+max(vtn)
+min(vtn)
+lept<-min(vtn)-0.05
+rept<-max(vtn)+0.05
+rnge<-rept-lept
+inc<-rnge/9
+inc
+seq(lept, rept,by=inc)->cl
+cl
+cvtn<-cut(vtn,breaks=cl)
+new.tab=table(cvtn)
+barplot(new.tab,space=0,main="Frequency Histogram(NEW)",las=2)
+hist(vtn,nclass=10)
+```
+
+### d)
+
+**No it seems the old location is better for production over the new one with the mean and median being higher at the old location**
+
+### e)
+
+```{r}
+mean(vto)
+median(vto)
+getmode(vto)
+mean(vtn)
+median(vtn)
+getmode(vtn)
+```
+
+### f)
+
+```{r}
+(10.5-mean(vto))/sd(vto)
+```
+
+### g)
+
+```{r}
+(10.5-mean(vtn))/sd(vtn)
+```
+
+### h)
+
+**A voltage of 10.5 is more likely to happen in the old location as it is 1.29 standard deviations from the mean of the data**
+
+### i)
+
+```{r}
+boxplot(vto, col="BEIGE")
+```
+
+### j)
+
+```{r}
+z=(vto-mean(vto))/sd(vto)
+z[abs(z)>=2 & abs(z)<=3]
+vto[abs(z)>=2 & abs(z)<=3]
+
+```
+
+### k)
+
+```{r}
+boxplot(vtn, col="SALMON")
+```
+
+### l)
+
+```{r}
+z=(vtn-mean(vtn))/sd(vtn)
+z[abs(z)>=2 & abs(z)<=3]
+vtn[abs(z)>=2 & abs(z)<=3]
+```
+
+### m)
+
+```{r}
+layout(matrix(1:2,nr=1,nc=2))
+boxplot(vto, col="AQUAMARINE")
+boxplot(vtn, col="SALMON")
+
+```
+
+# Problem 12
+
+```{r}
+pipe=read.csv("ROUGHPIPE.csv")
+head(pipe)
+r=pipe$ROUGH
+
+#Standardize(transform) into z values
+z=(r-mean(r))/sd(r)
+
+#class
+class(z)
+boxplot(r[abs(z)<3], col="PINK", horizontal=TRUE)
+```
+
+# Problem 13
+
+```{r}
+ant=read.csv("GOBIANTS.csv")
+head(ant)
+```
+
+### a)
+
+```{r}
+ants= ant$AntSpecies
+mean(ants)
+median(ants)
+getmode(ants)
+```
+
+### b)
+
+
+
+### c)
+
+```{r}
+dryplants<-subset(ant,subset=Region=="Dry Steppe")
+dryplants.v=dryplants$PlantCov
+mean(dryplants.v)
+median(dryplants.v)
+getmode(dryplants.v)
+```
+
+### d)
+
+```{r}
+desertplants<-subset(ant,subset=Region=="Gobi Desert")
+desertplant.v = desertplants$PlantCov
+mean(desertplant.v)
+median(desertplant.v)
+getmode(desertplant.v)
+```
+
+### e)
+
+```{r}
+hdep<-hist(desertplant.v)
+n=length(desertplant.v)
+barplot(hdep$counts/n,col="white",space=0)->bp    
+axis(1,at=c(bp),labels=hdep$mids)
+title(ylab="Relative Frequency",xlab="Gobi Desert Plant Coverage")
+
+#dryplants wont plot because invalid number of breaks
+```
+
+# Problem 14 
+
+```{r}
+galaxy=read.csv("GALAXY2.csv")
+head(galaxy)
+```
+
+### a)
+
+```{r}
+vel<-galaxy$VELOCITY
+max(vel)
+min(vel)
+lept<-min(vel)-0.05
+rept<-max(vel)+0.05
+rnge<-rept-lept
+inc<-rnge/9
+inc
+seq(lept, rept,by=inc)->cl
+cl
+cvel<-cut(vel,breaks=cl)
+new.tab=table(cvel)
+barplot(new.tab,space=0,main="Frequency Histogram(Velocity)",las=2)
+hist(vel,nclass=10)
+```
+
+### b)
+
+**Yes on the second graph there are two major peaks in the graph**
+
+### c)
+
+### d)
+
+# Problem 15
+
+```{r}
+library(dplyr)
+library(ggplot2)
+ddt%>%filter(WEIGHT > 100)%>%ggplot(aes(x=RIVER,y=LENGTH,fill=SPECIES))+geom_boxplot()+ggtitle("Nathanael Reese")
+```
+
